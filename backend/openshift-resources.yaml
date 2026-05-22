@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gestion-pedidos-backend
+spec:
+  selector:
+    app: gestion-pedidos-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestion-pedidos-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gestion-pedidos-backend
+  template:
+    metadata:
+      labels:
+        app: gestion-pedidos-backend
+    spec:
+      containers:
+        - name: gestion-pedidos-backend
+          image: REPLACE_WITH_IMAGE
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://gestion-pedidos-postgres:5432/gestion_pedidos"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-pedidos-postgres-secret
+                  key: POSTGRES_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-pedidos-postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: SERVER_PORT
+              value: "8080"
+          readinessProbe:
+            httpGet:
+              path: /api/pedidos
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: gestion-pedidos-backend
+spec:
+  to:
+    kind: Service
+    name: gestion-pedidos-backend
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge

@@ -1,0 +1,20 @@
+# Template/example - DO NOT commit real credentials. Use this as reference to create the secret in OpenShift.
+# Example (not recommended to apply directly with real credentials in repo):
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gestion-pedidos-postgres-secret
+type: Opaque
+data:
+  # Replace the base64 placeholders with your own base64-encoded values, or better, create the secret with 'oc create secret' as shown below.
+  POSTGRES_USER: <BASE64_POSTGRES_USER>
+  POSTGRES_PASSWORD: <BASE64_POSTGRES_PASSWORD>
+  POSTGRES_DB: <BASE64_POSTGRES_DB>
+
+# Recommended: create the secret from literals locally and do NOT commit to git:
+# oc create secret generic gestion-pedidos-postgres-secret \
+#   --from-literal=POSTGRES_USER=postgres \
+#   --from-literal=POSTGRES_PASSWORD=YOUR_PASSWORD \
+#   --from-literal=POSTGRES_DB=gestion_pedidos
+
+# After creating the secret in the cluster, apply the postgres Deployment and Service from openshift-postgres.yaml

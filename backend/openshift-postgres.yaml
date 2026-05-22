@@ -1,0 +1,55 @@
+type: Opaque
+data:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestion-pedidos-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gestion-pedidos-postgres
+  template:
+    metadata:
+      labels:
+        app: gestion-pedidos-postgres
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-pedidos-postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-pedidos-postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-pedidos-postgres-secret
+                  key: POSTGRES_DB
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gestion-pedidos-postgres
+spec:
+  selector:
+    app: gestion-pedidos-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
